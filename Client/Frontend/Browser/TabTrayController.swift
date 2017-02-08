@@ -27,7 +27,7 @@ struct TabTrayControllerUX {
     static let CompactNumberOfColumnsThin = 2
 
     static let MenuFixedWidth: CGFloat = 320
-    
+
     static let RearrangeWobblePeriod: TimeInterval = 0.1
     static let RearrangeTransitionDuration: TimeInterval = 0.2
     static let RearrangeWobbleAngle: CGFloat = 0.02
@@ -132,7 +132,7 @@ class TabCell: UICollectionViewCell {
         self.innerStroke.layer.backgroundColor = UIColor.clear.cgColor
 
         super.init(frame: frame)
-        
+
         self.animator = SwipeAnimator(animatingView: self.backgroundHolder, container: self)
         self.closeButton.addTarget(self, action: #selector(TabCell.SELclose), for: UIControlEvents.touchUpInside)
 
@@ -181,26 +181,26 @@ class TabCell: UICollectionViewCell {
         let w = frame.width
         let h = frame.height
         backgroundHolder.frame = CGRect(x: margin,
-            y: margin,
-            width: w,
-            height: h)
+                                        y: margin,
+                                        width: w,
+                                        height: h)
         background.frame = CGRect(origin: CGPoint(x: 0, y: 0), size: backgroundHolder.frame.size)
 
         title.frame = CGRect(x: 0,
-            y: 0,
-            width: backgroundHolder.frame.width,
-            height: TabTrayControllerUX.TextBoxHeight)
+                             y: 0,
+                             width: backgroundHolder.frame.width,
+                             height: TabTrayControllerUX.TextBoxHeight)
 
         favicon.frame = CGRect(x: 6,
-            y: (TabTrayControllerUX.TextBoxHeight - TabTrayControllerUX.FaviconSize)/2,
-            width: TabTrayControllerUX.FaviconSize,
-            height: TabTrayControllerUX.FaviconSize)
+                               y: (TabTrayControllerUX.TextBoxHeight - TabTrayControllerUX.FaviconSize)/2,
+                               width: TabTrayControllerUX.FaviconSize,
+                               height: TabTrayControllerUX.FaviconSize)
 
         let titleTextLeft = favicon.frame.origin.x + favicon.frame.width + 6
         titleText.frame = CGRect(x: titleTextLeft,
-            y: 0,
-            width: title.frame.width - titleTextLeft - margin  - TabTrayControllerUX.CloseButtonSize - TabTrayControllerUX.CloseButtonMargin * 2,
-            height: title.frame.height)
+                                 y: 0,
+                                 width: title.frame.width - titleTextLeft - margin  - TabTrayControllerUX.CloseButtonSize - TabTrayControllerUX.CloseButtonMargin * 2,
+                                 height: title.frame.height)
 
         innerStroke.frame = background.frame
 
@@ -350,7 +350,7 @@ class TabTrayController: UIViewController {
         self.collectionView.reloadData()
     }
 
-// MARK: View Controller Callbacks
+    // MARK: View Controller Callbacks
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -449,7 +449,7 @@ class TabTrayController: UIViewController {
         }
     }
 
-// MARK: Selectors
+    // MARK: Selectors
     func SELdidClickDone() {
         presentingViewController!.dismiss(animated: true, completion: nil)
     }
@@ -464,7 +464,7 @@ class TabTrayController: UIViewController {
 
         let controller = SettingsNavigationController(rootViewController: settingsTableViewController)
         controller.popoverDelegate = self
-		controller.modalPresentationStyle = UIModalPresentationStyle.formSheet
+        controller.modalPresentationStyle = UIModalPresentationStyle.formSheet
         present(controller, animated: true, completion: nil)
     }
 
@@ -497,57 +497,57 @@ class TabTrayController: UIViewController {
 
     func didLongPressTab(_ gesture: UILongPressGestureRecognizer) {
         switch gesture.state {
-            case .began:
-                let pressPosition = gesture.location(in: self.collectionView)
-                guard let indexPath = self.collectionView.indexPathForItem(at: pressPosition) else {
-                    break
-                }
-                self.collectionView.beginInteractiveMovementForItem(at: indexPath)
-                self.view.isUserInteractionEnabled = false
-                self.tabDataSource.isRearrangingTabs = true
-                for item in 0..<self.tabDataSource.collectionView(self.collectionView, numberOfItemsInSection: 0) {
-                    guard let cell = self.collectionView.cellForItem(at: IndexPath(item: item, section: 0)) as? TabCell else {
-                        continue
-                    }
-                    if item == indexPath.item {
-                        let cellPosition = cell.contentView.convert(cell.bounds.center, to: self.collectionView)
-                        self.draggedCell = cell
-                        self.dragOffset = CGPoint(x: pressPosition.x - cellPosition.x, y: pressPosition.y - cellPosition.y)
-                        UIView.animate(withDuration: TabTrayControllerUX.RearrangeTransitionDuration, delay: 0, options: [.allowUserInteraction, .beginFromCurrentState], animations: {
-                            cell.contentView.transform = CGAffineTransform(scaleX: TabTrayControllerUX.RearrangeDragScale, y: TabTrayControllerUX.RearrangeDragScale)
-                            cell.contentView.alpha = TabTrayControllerUX.RearrangeDragAlpha
-                        }, completion: nil)
-                        continue
-                    }
-                    cell.isBeingArranged = true
-                }
+        case .began:
+            let pressPosition = gesture.location(in: self.collectionView)
+            guard let indexPath = self.collectionView.indexPathForItem(at: pressPosition) else {
                 break
-            case .changed:
-                if let view = gesture.view, let draggedCell = self.draggedCell {
-                    var dragPosition = gesture.location(in: view)
-                    let offsetPosition = CGPoint(x: dragPosition.x + draggedCell.frame.center.x * (1 - TabTrayControllerUX.RearrangeDragScale), y: dragPosition.y + draggedCell.frame.center.y * (1 - TabTrayControllerUX.RearrangeDragScale))
-                    dragPosition = CGPoint(x: offsetPosition.x - self.dragOffset.x, y: offsetPosition.y - self.dragOffset.y)
-                    collectionView.updateInteractiveMovementTargetPosition(dragPosition)
+            }
+            self.collectionView.beginInteractiveMovementForItem(at: indexPath)
+            self.view.isUserInteractionEnabled = false
+            self.tabDataSource.isRearrangingTabs = true
+            for item in 0..<self.tabDataSource.collectionView(self.collectionView, numberOfItemsInSection: 0) {
+                guard let cell = self.collectionView.cellForItem(at: IndexPath(item: item, section: 0)) as? TabCell else {
+                    continue
                 }
-            case .ended, .cancelled:
-                for item in 0..<self.tabDataSource.collectionView(self.collectionView, numberOfItemsInSection: 0) {
-                    guard let cell = self.collectionView.cellForItem(at: IndexPath(item: item, section: 0)) as? TabCell else {
-                        continue
-                    }
-                    if !cell.isBeingArranged {
-                        UIView.animate(withDuration: TabTrayControllerUX.RearrangeTransitionDuration, delay: 0, options: [.allowUserInteraction, .beginFromCurrentState], animations: {
-                            cell.contentView.transform = CGAffineTransform.identity
-                            cell.contentView.alpha = 1
-                        }, completion: nil)
-                        continue
-                    }
-                    cell.isBeingArranged = false
+                if item == indexPath.item {
+                    let cellPosition = cell.contentView.convert(cell.bounds.center, to: self.collectionView)
+                    self.draggedCell = cell
+                    self.dragOffset = CGPoint(x: pressPosition.x - cellPosition.x, y: pressPosition.y - cellPosition.y)
+                    UIView.animate(withDuration: TabTrayControllerUX.RearrangeTransitionDuration, delay: 0, options: [.allowUserInteraction, .beginFromCurrentState], animations: {
+                        cell.contentView.transform = CGAffineTransform(scaleX: TabTrayControllerUX.RearrangeDragScale, y: TabTrayControllerUX.RearrangeDragScale)
+                        cell.contentView.alpha = TabTrayControllerUX.RearrangeDragAlpha
+                    }, completion: nil)
+                    continue
                 }
-                self.tabDataSource.isRearrangingTabs = false
-                self.view.isUserInteractionEnabled = true
-                gesture.state == .ended ? self.collectionView.endInteractiveMovement() : self.collectionView.cancelInteractiveMovement()
-            default:
-                break
+                cell.isBeingArranged = true
+            }
+            break
+        case .changed:
+            if let view = gesture.view, let draggedCell = self.draggedCell {
+                var dragPosition = gesture.location(in: view)
+                let offsetPosition = CGPoint(x: dragPosition.x + draggedCell.frame.center.x * (1 - TabTrayControllerUX.RearrangeDragScale), y: dragPosition.y + draggedCell.frame.center.y * (1 - TabTrayControllerUX.RearrangeDragScale))
+                dragPosition = CGPoint(x: offsetPosition.x - self.dragOffset.x, y: offsetPosition.y - self.dragOffset.y)
+                collectionView.updateInteractiveMovementTargetPosition(dragPosition)
+            }
+        case .ended, .cancelled:
+            for item in 0..<self.tabDataSource.collectionView(self.collectionView, numberOfItemsInSection: 0) {
+                guard let cell = self.collectionView.cellForItem(at: IndexPath(item: item, section: 0)) as? TabCell else {
+                    continue
+                }
+                if !cell.isBeingArranged {
+                    UIView.animate(withDuration: TabTrayControllerUX.RearrangeTransitionDuration, delay: 0, options: [.allowUserInteraction, .beginFromCurrentState], animations: {
+                        cell.contentView.transform = CGAffineTransform.identity
+                        cell.contentView.alpha = 1
+                    }, completion: nil)
+                    continue
+                }
+                cell.isBeingArranged = false
+            }
+            self.tabDataSource.isRearrangingTabs = false
+            self.view.isUserInteractionEnabled = true
+            gesture.state == .ended ? self.collectionView.endInteractiveMovement() : self.collectionView.cancelInteractiveMovement()
+        default:
+            break
         }
     }
 
@@ -569,6 +569,8 @@ class TabTrayController: UIViewController {
         let exitingPrivateMode = !privateMode && profile.prefs.boolForKey("settings.closePrivateTabs") ?? false
         if exitingPrivateMode {
             tabManager.removeAllPrivateTabsAndNotify(false)
+
+            LeanplumIntegration.sharedInstance.track(event: "Close Private Tabs when leaving Private Browsing")
         }
 
         toolbar.maskButton.setSelected(privateMode, animated: true)
@@ -585,6 +587,10 @@ class TabTrayController: UIViewController {
         } else {
             emptyPrivateTabsView.isHidden = false
             toView = emptyPrivateTabsView
+
+            if let bool = profile.prefs.boolForKey("settings.closePrivateTabs"), bool {
+                tabManager.showFocusPromoToast()
+            }
         }
         toView.alpha = 0
         toView.transform = scaleDownTransform
@@ -650,6 +656,7 @@ class TabTrayController: UIViewController {
 
     fileprivate func closeTabsForCurrentTray() {
         tabManager.removeTabsWithUndoToast(tabsToDisplay)
+
         self.collectionView.reloadData()
     }
 }
@@ -668,7 +675,7 @@ extension TabTrayController {
         UIView.animate(withDuration: 0.2, delay: 0, options: UIViewAnimationOptions(), animations: {
             self.collectionView.alpha = 1
         },
-        completion: nil)
+                       completion: nil)
     }
 }
 
@@ -749,7 +756,7 @@ extension TabTrayController: TabManagerDelegate {
 
     func tabManagerDidRestoreTabs(_ tabManager: TabManager) {
     }
-    
+
     func tabManagerDidRemoveAllTabs(_ tabManager: TabManager, toast: ButtonToast?) {
         guard privateMode else {
             return
@@ -908,7 +915,7 @@ fileprivate class TabManagerDataSource: NSObject, UICollectionViewDataSource {
     @objc func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return tabs.count
     }
-    
+
     @objc fileprivate func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         let fromIndex = sourceIndexPath.item
         let toIndex = destinationIndexPath.item
@@ -1029,9 +1036,9 @@ fileprivate class EmptyPrivateTabsView: UIView {
         super.init(frame: frame)
 
         titleLabel.text =  NSLocalizedString("Private Browsing",
-            tableName: "PrivateBrowsing", comment: "Title displayed for when there are no open tabs while in private mode")
+                                             tableName: "PrivateBrowsing", comment: "Title displayed for when there are no open tabs while in private mode")
         descriptionLabel.text = NSLocalizedString("Firefox won't remember any of your history or cookies, but new bookmarks will be saved.",
-            tableName: "PrivateBrowsing", comment: "Description text displayed when there are no open tabs while in private mode")
+                                                  tableName: "PrivateBrowsing", comment: "Description text displayed when there are no open tabs while in private mode")
 
         addSubview(titleLabel)
         addSubview(descriptionLabel)
@@ -1172,6 +1179,10 @@ extension TabTrayController: MenuActionDelegate {
                 DispatchQueue.main.async {
                     self.closeTabsForCurrentTray()
                 }
+
+                if privateMode {
+                    LeanplumIntegration.sharedInstance.track(event: "Close Private Tabs")
+                }
             case .openTopSites:
                 DispatchQueue.main.async {
                     self.openNewTab(PrivilegedRequest(url: HomePanelType.topSites.localhostURL) as URLRequest)
@@ -1235,32 +1246,32 @@ class TrayToolbar: UIView {
         buttonToCenter = menuButton
         
         maskButton.accessibilityIdentifier = "TabTrayController.maskButton"
-
+        
         buttonToCenter?.snp.makeConstraints { make in
             make.center.equalTo(self)
             make.size.equalTo(toolbarButtonSize)
         }
-
+        
         addTabButton.snp.makeConstraints { make in
             make.centerY.equalTo(self)
             make.left.equalTo(self).offset(sideOffset)
             make.size.equalTo(toolbarButtonSize)
         }
-
+        
         addSubview(maskButton)
         maskButton.snp.makeConstraints { make in
             make.centerY.equalTo(self)
             make.right.equalTo(self).offset(-sideOffset)
             make.size.equalTo(toolbarButtonSize)
         }
-
+        
         styleToolbar(false)
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     fileprivate func styleToolbar(_ isPrivate: Bool) {
         addTabButton.tintColor = isPrivate ? .white : .darkGray
         menuButton.tintColor = isPrivate ? .white : .darkGray

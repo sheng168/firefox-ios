@@ -259,22 +259,22 @@ class TabManager: NSObject {
         configureTab(tab, request: request, afterTab: afterTab, flushToDisk: flushToDisk, zombie: zombie)
         return tab
     }
-    
+
     func moveTab(isPrivate privateMode: Bool, fromIndex visibleFromIndex: Int, toIndex visibleToIndex: Int) {
         assert(Thread.isMainThread)
-        
+
         let currentTabs = privateMode ? privateTabs : normalTabs
         let fromIndex = tabs.index(of: currentTabs[visibleFromIndex]) ?? tabs.count - 1
         let toIndex = tabs.index(of: currentTabs[visibleToIndex]) ?? tabs.count - 1
-        
+
         let previouslySelectedTab = selectedTab
-        
+
         tabs.insert(tabs.remove(at: fromIndex), at: toIndex)
-        
+
         if let previouslySelectedTab = previouslySelectedTab, let previousSelectedIndex = tabs.index(of: previouslySelectedTab) {
             _selectedIndex = previousSelectedIndex
         }
-        
+
         storeChanges()
     }
 
@@ -307,7 +307,7 @@ class TabManager: NSObject {
             let newTabChoice = NewTabAccessors.getNewTabPage(prefs)
             switch newTabChoice {
             case .homePage:
-                // We definitely have a homepage if we've got here 
+                // We definitely have a homepage if we've got here
                 // (so we can safely dereference it).
                 let url = HomePageAccessors.getHomePage(prefs)!
                 tab.loadRequest(URLRequest(url: url))
@@ -324,7 +324,7 @@ class TabManager: NSObject {
             }
         }
         if flushToDisk {
-        	storeChanges()
+            storeChanges()
         }
     }
 
@@ -420,18 +420,18 @@ class TabManager: NSObject {
         // without this we get a nasty crash
         guard let selectedTab = selectedTab,
             let _ = privateTabs.index(of: selectedTab) else {
-            return privateTabs.forEach({ removeTab($0, flushToDisk: true, notify: notify) })
+                return privateTabs.forEach({ removeTab($0, flushToDisk: true, notify: notify) })
         }
 
         let nonSelectedTabsForRemoval = privateTabs.filter { $0 != selectedTab }
         nonSelectedTabsForRemoval.forEach({ removeTab($0, flushToDisk: true, notify: notify) })
         removeTab(selectedTab, flushToDisk: true, notify: notify)
     }
-    
+
     func removeTabsWithUndoToast(_ tabs: [Tab]) {
         tempTabs = tabs
         var tabsCopy = tabs
-        
+
         // Remove the current tab last to prevent switching tabs while removing tabs
         if let selectedTab = selectedTab {
             if let selectedIndex = tabsCopy.index(of: selectedTab) {
@@ -453,6 +453,8 @@ class TabManager: NSObject {
                     for delegate in self.delegates {
                         delegate.get()?.tabManagerDidAddTabs(self)
                     }
+                } else {
+                    self.showFocusPromoToast()
                 }
                 self.eraseUndoCache()
             })
@@ -460,7 +462,29 @@ class TabManager: NSObject {
 
         delegates.forEach { $0.get()?.tabManagerDidRemoveAllTabs(self, toast: toast) }
     }
-    
+
+    func showFocusPromoToast() {
+        // add check for event stuff
+        guard let shouldShowFocusUI = LeanplumIntegration.sharedInstance.getBoolVariableFromServer(key: "shouldShowFocusUI"), let focus = NSURL(string: "firefox-focus://"), let klar = NSURL(string: "firefox-klar://"), !UIApplication.shared.canOpenURL(focus as URL) && !UIApplication.shared.canOpenURL(klar as URL) && shouldShowFocusUI else {
+            return
+        }
+
+
+        var toast: LeanplumPromoButtonToast
+        let templateDict = LeanplumIntegration.sharedInstance.getTemplateDictionary()!
+        toast = LeanplumPromoButtonToast(labelText: templateDict["Template Text"]! , buttonText: templateDict["Button Text"]!, colorText: templateDict["Hex Color String"]!, completion: { buttonPressed in
+            guard let url = NSURL(string: "https://itunes.apple.com/app/id1055677337") else {
+                return
+            }
+
+            if UIApplication.shared.canOpenURL(url as URL) && buttonPressed {
+                UIApplication.shared.openURL(url as URL)
+            }
+        })
+
+        delegates.forEach { $0.get()?.tabManagerDidRemoveAllTabs(self, toast: toast) }
+    }
+
     func undoCloseTabs() {
         guard let tempTabs = self.tempTabs, tempTabs.count > 0 else {
             return
@@ -480,7 +504,7 @@ class TabManager: NSObject {
         self.tempTabs?.removeAll()
         tabs.first?.createWebview()
     }
-    
+
     func eraseUndoCache() {
         tempTabs?.removeAll()
     }
@@ -491,7 +515,7 @@ class TabManager: NSObject {
         }
         storeChanges()
     }
-    
+
     func removeAll() {
         removeTabs(self.tabs)
     }
@@ -656,7 +680,7 @@ extension TabManager {
                 savedTabs.append(savedTab)
 
                 if let screenshot = tab.screenshot,
-                   let screenshotUUID = tab.screenshotUUID {
+                    let screenshotUUID = tab.screenshotUUID {
                     savedUUIDs.insert(screenshotUUID.uuidString)
                     imageStore?.put(screenshotUUID.uuidString, image: screenshot)
                 }
@@ -706,7 +730,7 @@ extension TabManager {
             // Set the UUID for the tab, asynchronously fetch the UIImage, then store
             // the screenshot in the tab as long as long as a newer one hasn't been taken.
             if let screenshotUUID = savedTab.screenshotUUID,
-               let imageStore = self.imageStore {
+                let imageStore = self.imageStore {
                 tab.screenshotUUID = screenshotUUID
                 imageStore.get(screenshotUUID.uuidString) >>== { screenshot in
                     if tab.screenshotUUID == screenshotUUID {
@@ -755,7 +779,7 @@ extension TabManager {
             let _ = Try(
                 withTry: { () -> Void in
                     self.restoreTabsInternal()
-                },
+            },
                 catch: { exception in
                     print("Failed to restore tabs: \(exception ??? "nil")")
                 }
@@ -771,7 +795,7 @@ extension TabManager {
             }
         }
     }
-    
+
     func restoreTabs(_ savedTabs: [Tab]) {
         isRestoring = true
         for tab in savedTabs {
@@ -871,9 +895,9 @@ class TabManagerNavDelegate: NSObject, WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-            for delegate in delegates {
-                delegate.webView?(webView, didFailProvisionalNavigation: navigation, withError: error)
-            }
+        for delegate in delegates {
+            delegate.webView?(webView, didFailProvisionalNavigation: navigation, withError: error)
+        }
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -883,17 +907,17 @@ class TabManagerNavDelegate: NSObject, WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-            let authenticatingDelegates = delegates.filter { wv in
-                return wv.responds(to: #selector(WKNavigationDelegate.webView(_:didReceive:completionHandler:)))
-            }
+        let authenticatingDelegates = delegates.filter { wv in
+            return wv.responds(to: #selector(WKNavigationDelegate.webView(_:didReceive:completionHandler:)))
+        }
 
-            guard let firstAuthenticatingDelegate = authenticatingDelegates.first else {
-                return completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil)
-            }
+        guard let firstAuthenticatingDelegate = authenticatingDelegates.first else {
+            return completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil)
+        }
 
-            firstAuthenticatingDelegate.webView?(webView, didReceive: challenge) { (disposition, credential) in
-                completionHandler(disposition, credential)
-            }
+        firstAuthenticatingDelegate.webView?(webView, didReceive: challenge) { (disposition, credential) in
+            completionHandler(disposition, credential)
+        }
     }
 
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
@@ -909,30 +933,30 @@ class TabManagerNavDelegate: NSObject, WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            var res = WKNavigationActionPolicy.allow
-            for delegate in delegates {
-                delegate.webView?(webView, decidePolicyFor: navigationAction, decisionHandler: { policy in
-                    if policy == .cancel {
-                        res = policy
-                    }
-                })
-            }
-
-            decisionHandler(res)
+        var res = WKNavigationActionPolicy.allow
+        for delegate in delegates {
+            delegate.webView?(webView, decidePolicyFor: navigationAction, decisionHandler: { policy in
+                if policy == .cancel {
+                    res = policy
+                }
+            })
+        }
+        
+        decisionHandler(res)
     }
-
+    
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationResponse: WKNavigationResponse,
                  decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-            var res = WKNavigationResponsePolicy.allow
-            for delegate in delegates {
-                delegate.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: { policy in
-                    if policy == .cancel {
-                        res = policy
-                    }
-                })
-            }
-
-            decisionHandler(res)
+        var res = WKNavigationResponsePolicy.allow
+        for delegate in delegates {
+            delegate.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: { policy in
+                if policy == .cancel {
+                    res = policy
+                }
+            })
+        }
+        
+        decisionHandler(res)
     }
 }

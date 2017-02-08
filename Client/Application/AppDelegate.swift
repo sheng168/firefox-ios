@@ -157,10 +157,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
         
         adjustIntegration = AdjustIntegration(profile: profile)
 
+        LeanplumIntegration.sharedInstance.setup(profile: profile)
+
         // We need to check if the app is a clean install to use for
         // preventing the What's New URL from appearing.
         if getProfile(application).prefs.intForKey(IntroViewControllerSeenProfileKey) == nil {
             getProfile(application).prefs.setString(AppInfo.appVersion, forKey: LatestAppVersionProfileKey)
+            LeanplumIntegration.sharedInstance.track(event: "First Run")
+        } else if getProfile(application).prefs.boolForKey("SecondRun") == nil {
+            getProfile(application).prefs.setBool(true, forKey: "SecondRun")
+            LeanplumIntegration.sharedInstance.track(event: "Second Run")
+        }
+
+        LeanplumIntegration.sharedInstance.track(event: "Opened App")
+
+        if let focusURL = NSURL(string: "firefox-focus://"), UIApplication.shared.canOpenURL(focusURL as URL) {
+            LeanplumIntegration.sharedInstance.advanceTo(state: "Focus Installed")
+        }
+
+        if let klarURL = NSURL(string: "firefox-klar://"), UIApplication.shared.canOpenURL(klarURL as URL) {
+            LeanplumIntegration.sharedInstance.advanceTo(state: "Klar Installed")
+        }
+
+        if let mailtoScheme = profile.prefs.stringForKey(PrefsKeys.KeyMailToOption), mailtoScheme != "mailto:" {
+            LeanplumIntegration.sharedInstance.advanceTo(state: "Alternate Mail Client Installed - " + mailtoScheme)
         }
 
         log.debug("Updating authentication keychain state to reflect system state")

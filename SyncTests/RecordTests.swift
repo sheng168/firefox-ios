@@ -162,6 +162,28 @@ class RecordTests: XCTestCase {
         let badID = Record<CleartextPayloadJSON>.fromEnvelope(badPayloadGUIDEnvelope, payloadFactory: cleartextClientsFactory)
         XCTAssertNil(badID)
 
+        // No ID in non-empty payload.
+        let noPayloadGUIDEnvelope = EnvelopeJSON(noPayloadGUIDRecordString)
+
+        // The envelope is valid...
+        XCTAssertTrue(noPayloadGUIDEnvelope.isValid())
+
+        // ... but the payload is not.
+        let noID = Record<CleartextPayloadJSON>.fromEnvelope(noPayloadGUIDEnvelope, payloadFactory: cleartextClientsFactory)
+        XCTAssertNotNil(noID)
+        XCTAssertFalse(noID!.payload.isValid())
+
+        // Non-string ID in payload.
+        let badPayloadGUIDEnvelope = EnvelopeJSON(badPayloadGUIDRecordString)
+
+        // The envelope is valid...
+        XCTAssertTrue(badPayloadGUIDEnvelope.isValid())
+
+        // ... but the payload is not.
+        let badID = Record<CleartextPayloadJSON>.fromEnvelope(badPayloadGUIDEnvelope, payloadFactory: cleartextClientsFactory)
+        XCTAssertNotNil(badID)
+        XCTAssertFalse(badID!.payload.isValid())
+
         // Only valid ClientPayloads are valid.
         XCTAssertNil(Record<ClientPayload>.fromEnvelope(EnvelopeJSON(invalidPayload), payloadFactory: cleartextClientsFactory))
         XCTAssertTrue(Record<ClientPayload>.fromEnvelope(EnvelopeJSON(clientPayload), payloadFactory: cleartextClientsFactory)!.payload.isValid())

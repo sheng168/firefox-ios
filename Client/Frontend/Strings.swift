@@ -44,7 +44,7 @@ extension Strings {
     public static let ASHighlightsTitle =  NSLocalizedString("ActivityStream.Highlights.SectionTitle", value: "Highlights", comment: "Section title label for Highlights")
     public static let ASTopSitesTitle =  NSLocalizedString("ActivityStream.TopSites.SectionTitle", value: "Top Sites", comment: "Section title label for Top Sites")
     public static let OpenInNewTabContextMenuTitle = NSLocalizedString("ActivityStream.ContextMenu.OpenInNewTab", value: "Open in New Tab", comment: "The title for the Open in New Tab context menu action for Activity Stream")
-    
+
     public static let OpenInNewPrivateTabContextMenuTitle = NSLocalizedString("ActivityStream.ContextMenu.OpenInNewPrivateTab", value: "Open in New Private Tab", comment: "The title for the Open in New Private Tab context menu action for Activity Stream")
     public static let BookmarkContextMenuTitle = NSLocalizedString("ActivityStream.ContextMenu.Bookmark", value: "Bookmark", comment: "The title for the Bookmark context menu action for Activity Stream")
     public static let RemoveBookmarkContextMenuTitle = NSLocalizedString("ActivityStream.ContextMenu.RemoveBookmark", value: "Remove Bookmark", comment: "The title for the Remove Bookmark context menu action for Activity Stream")
@@ -278,6 +278,12 @@ extension Strings {
 extension Strings {
     public static let ReaderModeAvailableVoiceOverAnnouncement = NSLocalizedString("ReaderMode.Available.VoiceOverAnnouncement", value: "Reader Mode available", comment: "Accessibility message e.g. spoken by VoiceOver when Reader Mode becomes available.")
     public static let ReaderModeResetFontSizeAccessibilityLabel = NSLocalizedString("Reset text size", comment: "Accessibility label for button resetting font size in display settings of reader mode")
+}
+
+// Leanplum Strings.
+extension Strings {
+    public static let FocusPromoString = NSLocalizedString("FocusPromo.Toast.LabelText", value: "Private browsing and nothing else.", comment: "Message for Leanplum Focus promo.")
+    public static let FocusPromoButtonString = NSLocalizedString("FocusPromo.Toast.ButtonText", value: "Get Focus", comment: "Button text for Leanplum Focus promo.")
 }
 
 // MARK: Deprecated Strings (to be removed in next version)

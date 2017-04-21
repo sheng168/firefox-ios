@@ -368,6 +368,7 @@ extension ActivityStreamPanel: ActivityStreamDataDelegate {
     // See ActivityStreamDataObserver for invalidation logic.
     func reloadAll() {
         accumulate([self.getHighlights, self.getTopSites]).uponQueue(DispatchQueue.main) { _ in
+            self.isInitialLoad = false
             self.collectionView?.reloadData()
         }
     }

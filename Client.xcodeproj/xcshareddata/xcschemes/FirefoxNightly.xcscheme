@@ -32,7 +32,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "/usr/local/bin/carthage checkout">
+               scriptText = "/usr/local/bin/carthage checkout&#10;/usr/bin/xcrun simctl uninstall booted com.mozilla.Nightly">
             </ActionContent>
          </ExecutionAction>
       </PreActions>
